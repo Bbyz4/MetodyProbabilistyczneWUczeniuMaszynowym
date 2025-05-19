@@ -17,17 +17,27 @@ def EvaluateStumpWeighted(stump, X, y_real, weights):
     y_stumped = np.array([stump(x) for x in X])
     return np.sum(weights[y_real != y_stumped]) / np.sum(weights)
 
-def GetSimpleStumpFunction(featureID, threshold, bigger):
+def GetSimpleStumpFunction(featureID, value):
     
     def DecisiveFunction(X):
             if len(X) != 30:
                 raise ValueError("DecisiveFunction: wrong arguments")
             
-            if bigger:
-                return 1 if X[featureID] >= threshold else -1
-            else:
-                return 1 if X[featureID] <= threshold else -1
+            return 1 if X[featureID] == value else -1
         
+    return DecisiveFunction
+
+def GetThresholdStumpFunction(featureID, threshold, bigger):
+    
+    def DecisiveFunction(X):
+        if len(X) != 30:
+            raise ValueError("DecisiveFunction: wrong arguments")
+        
+        if bigger:
+            return 1 if featureID >= threshold else -1
+        else:
+            return 1 if featureID <= threshold else -1
+    
     return DecisiveFunction
 
 def GetDecisiveFunction(trainingDataset, estimatorNumber):
@@ -43,8 +53,8 @@ def GetDecisiveFunction(trainingDataset, estimatorNumber):
     estimatorWeights = []
     
     #DATA IS NOT SCALED HERE
-    potentialNewStumps = [GetSimpleStumpFunction(i, 0, True) for i in range(21)] + [GetSimpleStumpFunction(i, 0, True) for i in range(21,29)] + [GetSimpleStumpFunction(i, -1, True) for i in range(21,29)] + [GetSimpleStumpFunction(29, 1, True)]
-    potentialNewStumps += [GetSimpleStumpFunction(i, 0, False) for i in range(21)] + [GetSimpleStumpFunction(i, 0, False) for i in range(21,29)] + [GetSimpleStumpFunction(i, -1, False) for i in range(21,29)] + [GetSimpleStumpFunction(29, 1, False)]
+    potentialNewStumps = [GetSimpleStumpFunction(featureID, value) for featureID in range(30) for value in [-1,0,1]]
+    potentialNewStumps += [GetThresholdStumpFunction(featureID, threshold, bigger) for featureID in range(30) for threshold in [0] for bigger in [True, False]]
     
     for zz in range(estimatorNumber):
         print(f"ADA: iteration {zz+1} in {estimatorNumber}")

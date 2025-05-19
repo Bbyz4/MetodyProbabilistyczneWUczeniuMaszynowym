@@ -10,6 +10,8 @@ import distance_function as dF
 
 import ada
 
+import math
+
 #---------------------------------------------SVM----------------------------------------------------
 
 def PerformSVMTests(testNumber, kernelFunctionList):
@@ -34,21 +36,23 @@ def PerformSVMTests(testNumber, kernelFunctionList):
 
 def SVMKernelTests(testNumber = 10):
     
-    gammas = np.arange(0.01,0.11,0.01)
+    gammas = [0.1]
+    degrees = [5]
+    betas = [0]
     
     #linear_kernel_func = kF.KernelFunction(kernelType='linear')
-    polynomial_kernel_funcs = [kF.KernelFunction(kernelType='poly', degree=5, gamma=g, coef0=0) for g in gammas]
-    #rbf_kernel_func = kF.KernelFunction(kernelType='rbf', gamma=0.1)
+    polynomial_kernel_funcs = [kF.KernelFunction(kernelType='poly', degree=d, gamma=g, coef0=b) for g in gammas for d in degrees for b in betas]
+    rbf_kernel_funcs = [kF.KernelFunction(kernelType='rbf', gamma=g) for g in gammas]
     
     testResult = PerformSVMTests(testNumber, polynomial_kernel_funcs)
     
-    kernel_names = [f'Poly 5 with gamma {g}' for g in gammas]
+    kernel_names = [f'Best SVM model' for b in betas]
       
     # Plot results  
     plt.figure(figsize=(10, 6))
     plt.boxplot(list(testResult.values()), labels=kernel_names)
-    plt.title('SVM Kernel functions comparation')
-    plt.xlabel('Kernel Function')
+    plt.title('RBF Gamma Comparation')
+    plt.xlabel('Gamma Value')
     plt.ylabel('Test Set Accuracy')
     plt.grid(False)
     plt.show()
@@ -79,9 +83,11 @@ def KNNDistFuncTests(testNumber = 10):
     eucidean_dist = dF.MinkowskiDistanceFunction(2)
     manhattan_dist = dF.MinkowskiDistanceFunction(1)
     
-    distFuncs = [eucidean_dist, manhattan_dist]
+    distFuncs = [dF.MinkowskiDistanceFunction(i) for i in range(1,11)]
     
-    distFunc_names = ['Euclidean', 'Manhattan']
+    #distFuncs = [eucidean_dist, manhattan_dist]
+    
+    distFunc_names = [f'{i}' for i in range(1,11)]
     
     testResult = PerformKNNTests(testNumber, distFuncs)
         
@@ -96,8 +102,8 @@ def KNNDistFuncTests(testNumber = 10):
 
 #---------------------------------------------ADA----------------------------------------------------
 
-def PerformADATests(testNumber, estimatorNumer):
-    results = []
+def PerformADATests(testNumber, estimatorNumbers):
+    results = {est: [] for est in estimatorNumbers}
     
     for zz in range(testNumber):
         print(f"ADATests: test {zz+1} in {testNumber}")
@@ -106,27 +112,26 @@ def PerformADATests(testNumber, estimatorNumer):
         
         print(f"TRAIN LEN: {len(trainingDataset)}")
         
-        decFunc = ada.GetDecisiveFunction(trainingDataset, estimatorNumer)
-        accuracy = ada.CalcAccuracy(testingDataset, decFunc)
-        
-        results.append(accuracy)
+        for yy, estimator in enumerate(estimatorNumbers):
+            print(f"ESTIMATOR {yy+1} in {len(estimatorNumbers)}")
+            decFunc = ada.GetDecisiveFunction(trainingDataset, estimator)
+            accuracy = ada.CalcAccuracy(testingDataset, decFunc)
+            
+            results[estimator].append(accuracy)
 
     return results
 
 def ADATests(testNumber = 10):
     
-    estimatorNumbers = [100, 500]
+    estimatorNumbers = [50, 100, 200]
     
     results = []
+    testResult = PerformADATests(testNumber, estimatorNumbers)
     
-    for zz, estNumber in enumerate(estimatorNumbers):
-        print(f"DistFunc {zz+1} in {len(estimatorNumbers)}")
-        testResult = PerformADATests(testNumber, estNumber)
-        results.append(testResult)
         
         # Plot results  
     plt.figure(figsize=(10, 6))
-    plt.boxplot(results, labels=estimatorNumbers)
+    plt.boxplot(list(testResult.values()), labels=estimatorNumbers)
     plt.title('AdaBoost weak estimator number comparation')
     plt.xlabel('Number of weak estimators')
     plt.ylabel('Test Set Accuracy')
@@ -135,6 +140,6 @@ def ADATests(testNumber = 10):
 
 #---------------------------------------------MAIN---------------------------------------------------    
 
-#SVMKernelTests(50)
-#KNNDistFuncTests(10)
-ADATests(10)
+#SVMKernelTests(100)
+#KNNDistFuncTests(100)
+#ADATests(100)

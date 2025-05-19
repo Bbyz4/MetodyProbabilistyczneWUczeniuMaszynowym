@@ -27,12 +27,8 @@ def GetDecisiveFunction(trainingDataset, kernelFunction, C):
     
     initialAlpha = np.zeros(N)
 
-    print(f"Before minimum calculation")
-
     result = minimize(W, initialAlpha, constraints=[EqualityConstraint], bounds=Bounds)
     alpha = result.x
-
-    print(f"After minimum calculation")
 
     supportVectorIndexes = [i for i in range(N) if alpha[i] > 1e-5]
     
