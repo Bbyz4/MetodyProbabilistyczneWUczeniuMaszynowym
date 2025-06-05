@@ -8,6 +8,8 @@ import heapq
 
 import utils
 
+from dsu import DSU
+
 def WardDistance(center1, center2, size1, size2):
     return ((size1*size2/(size1 + size2)) * utils.EuclideanDistSquared(center1, center2))
 
@@ -50,8 +52,6 @@ def HierarchicalClassifyPoints(originalPoints, points, isVisualized, dataID=0):
             currentNewClusterID += 1
             
         currentIteration += 1
-    
-    pass
 
     if isVisualized:
         diff = False
@@ -68,9 +68,21 @@ def HierarchicalClassifyPoints(originalPoints, points, isVisualized, dataID=0):
         
     return connectionHistory
 
+def GetClusterizationFromHistory(connectionHistory, desiredClusterNumber):
+    n = len(connectionHistory) + 1 #number of points
+    
+    D = DSU(2*n)
+    
+    for i in range(n - desiredClusterNumber):
+        D.union(connectionHistory[i][0][0], connectionHistory[i][0][1])
+        D.union(connectionHistory[i][0][0], i+n)
+        
+    return [D.find(i) for i in range(n)]
+    
+
 def HierarchicalDistancePlot(points):
     
-    connectionHistory = HierarchicalClassifyPoints(points, isVisualized=False)
+    connectionHistory = HierarchicalClassifyPoints(points, points, isVisualized=False)
     
     X = [x for x in range(int(math.sqrt(len(points)))+1, 1, -1)]
     Y = [con[2] for con in connectionHistory[-len(range(int(math.sqrt(len(points)))+1, 1, -1)):]]
@@ -82,5 +94,21 @@ def HierarchicalDistancePlot(points):
     plt.title("Hierarchical clusterization distance curve")
     
     plt.plot(X, Y, marker='o', color='blue')
+    
+    plt.show()
+    
+def HierarchicalSilhouettePlot(points):
+    connectionHistory = HierarchicalClassifyPoints(points, points, isVisualized=False)
+    
+    X = [x for x in range(int(math.sqrt(len(points)))+1, 1, -1)]
+    Y = [utils.GetSilhouetteScore(points, GetClusterizationFromHistory(connectionHistory, x)) for x in X]
+    
+    plt.figure(figsize=(12, 12))
+    
+    plt.xlabel("Clusters amount")
+    plt.ylabel("Silhouette score")
+    plt.title("Hierarchical clusterization silhouette score curve")
+    
+    plt.plot(X, Y, marker='o', color='blue', linestyle='')
     
     plt.show()

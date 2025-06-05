@@ -3,8 +3,10 @@ import numpy as np
 import colorsys
 import random
 import math
+import utils
 
 from matplotlib.animation import FuncAnimation
+from dsu import DSU
 
 def GenerateRainbowColors(n):
     return [
@@ -22,12 +24,6 @@ def PlotKmeansIterations(pointPositions, pointKeyframeData, centroidKeyframeData
     pointPositions = np.array(pointPositions)
     pointKeyframeData = np.array(pointKeyframeData)
     centroidKeyframeData = np.array(centroidKeyframeData)
-    
-    max_coeff = max([pointPositions[i][0] for i in range(len(pointPositions))] + [pointPositions[i][1] for i in range(len(pointPositions))])
-    min_coeff = min([pointPositions[i][0] for i in range(len(pointPositions))] + [pointPositions[i][1] for i in range(len(pointPositions))])
-    
-    ax.set_xlim(min_coeff*1.1, max_coeff*1.1)
-    ax.set_ylim(min_coeff*1.1, max_coeff*1.1)
     
     colors = GenerateRainbowColors(len(set(pointKeyframeData[0])))
     
@@ -65,7 +61,7 @@ def PlotKmeansIterations(pointPositions, pointKeyframeData, centroidKeyframeData
         blit = True,
         repeat = True)
     
-    anim.save(f'videos/random_{dataID}.mp4', fps=120)
+    anim.save(f'videos/kmeans_{dataID}.mp4', fps=120)
     
 def PlotKmeansIterationsAfterMapping(originalPoints, transformedPoints, pointKeyframeData, centroidKeyframeData, framesPerTransition = 60, blinkFrames = 20, dataID = 0):
     
@@ -80,18 +76,6 @@ def PlotKmeansIterationsAfterMapping(originalPoints, transformedPoints, pointKey
     transformedPoints = np.array(transformedPoints)
     pointKeyframeData = np.array(pointKeyframeData)
     centroidKeyframeData = np.array(centroidKeyframeData)
-    
-    max_coeff_1 = max([originalPoints[i][0] for i in range(len(originalPoints))] + [originalPoints[i][1] for i in range(len(originalPoints))])
-    min_coeff_1 = min([originalPoints[i][0] for i in range(len(originalPoints))] + [originalPoints[i][1] for i in range(len(originalPoints))])
-    
-    ax1.set_xlim(min_coeff_1*1.1, max_coeff_1*1.1)
-    ax1.set_ylim(min_coeff_1*1.1, max_coeff_1*1.1)
-    
-    max_coeff_2 = max([transformedPoints[i][0] for i in range(len(transformedPoints))] + [transformedPoints[i][1] for i in range(len(transformedPoints))])
-    min_coeff_2 = min([transformedPoints[i][0] for i in range(len(transformedPoints))] + [transformedPoints[i][1] for i in range(len(transformedPoints))])
-    
-    ax2.set_xlim(min_coeff_2*1.1, max_coeff_2*1.1)
-    ax2.set_ylim(min_coeff_2*1.1, max_coeff_2*1.1)
     
     colors = GenerateRainbowColors(len(set(pointKeyframeData[0])))
     
@@ -133,35 +117,9 @@ def PlotKmeansIterationsAfterMapping(originalPoints, transformedPoints, pointKey
         blit = True,
         repeat = True)
     
-    anim.save(f'videos/random_{dataID}.mp4', fps=120)
+    anim.save(f'videos/kmeans_spectral_{dataID}.mp4', fps=120)
  
 # For maintaining cluster connections
-class DSU:
-    def __init__(self, n):
-        self.parent = list(range(n))
-        self.size = [1] * n
-        
-    def find(self, i):
-        if self.parent[i] == i:
-            return i
-        else:
-            self.parent[i] = self.find(self.parent[i])
-            return self.parent[i]
-        
-    def union(self, i, j):
-        root_i = self.find(i)
-        root_j = self.find(j)
-        
-        if root_i != root_j:
-            if self.size[root_i] > self.size[root_j]:
-                root_i, root_j = root_j, root_i
-                
-            self.parent[root_i] = root_j
-            self.size[root_j] += self.size[root_i]
-            return True
-        else:
-            return False
-    
     
 def PlotHierarchicalHistory(points, connectionHistory, dataID = 0):
     
@@ -170,12 +128,6 @@ def PlotHierarchicalHistory(points, connectionHistory, dataID = 0):
     totalFrames = int(math.sqrt(len(points))) * 30 + int(len(points) - math.sqrt(len(points)))
     
     plt.title(f"Hierarchical clustering visualization for dane_2D_{dataID}")
-    
-    max_coeff = max([points[i][0] for i in range(len(points))] + [points[i][1] for i in range(len(points))])
-    min_coeff = min([points[i][0] for i in range(len(points))] + [points[i][1] for i in range(len(points))])
-    
-    ax.set_xlim(min_coeff*1.1, max_coeff*1.1)
-    ax.set_ylim(min_coeff*1.1, max_coeff*1.1)
     
     clusterColors = GenerateRainbowColors(len(points))
     random.shuffle(clusterColors)
@@ -224,7 +176,7 @@ def PlotHierarchicalHistory(points, connectionHistory, dataID = 0):
         blit = True,
         repeat = True)
     
-    anim.save(f'videos/fandom_{dataID}.mp4', fps=60)
+    anim.save(f'videos/hierarchical_{dataID}.mp4', fps=60)
     
 def PlotHierarchicalHistoryAfterMapping(originalPoints, points, connectionHistory, dataID = 0):
 
@@ -236,13 +188,7 @@ def PlotHierarchicalHistoryAfterMapping(originalPoints, points, connectionHistor
     totalFrames = int(math.sqrt(len(points))) * 30 + int(len(points) - math.sqrt(len(points)))
 
     plt.title(f"Hierarchical clustering visualization for dane_2D_{dataID}")
-
-    max_coeff2 = max([points[i][0] for i in range(len(points))] + [points[i][1] for i in range(len(points))])
-    min_coeff2 = min([points[i][0] for i in range(len(points))] + [points[i][1] for i in range(len(points))])
-
-    ax2.set_xlim(min_coeff2*1.1, max_coeff2*1.1)
-    ax2.set_ylim(min_coeff2*1.1, max_coeff2*1.1)
-
+    
     clusterColors = GenerateRainbowColors(len(points))
     random.shuffle(clusterColors)
 
@@ -292,4 +238,55 @@ def PlotHierarchicalHistoryAfterMapping(originalPoints, points, connectionHistor
         blit = True,
         repeat = True)
 
-    anim.save(f'videos/fandom_{dataID}.mp4', fps=60)
+    anim.save(f'videos/hierarchical_spectral_{dataID}.mp4', fps=60)
+    
+def NormalizeClassification(classification):
+    return [len(set(cla for cla in classification if cla<classification[j])) for j in range(len(classification))]
+    
+def CreateComparationPlot(points, *args):
+    
+    k = len(args)
+    n = len(points)
+    
+    C = len(set(args[0]))
+    
+    fig, axes = plt.subplots(1, k, figsize=(24, 24/k))
+    
+    if k == 1:
+        axes = [axes]
+        
+    texts = ["Real clusters", "kmeans", "hierarchical"] #hardcoded for now
+        
+    plt.title("Comparation of different clusterization techniques")
+    
+    colors = GenerateRainbowColors(C)
+    
+    realClust = None
+    
+    for i, data in enumerate(args):
+        clusterization = NormalizeClassification(data)
+        
+        if(i == 0):
+            realClust = [a for a in clusterization]
+        
+        
+        axes[i].scatter([points[i][0] for i in range(n)], [points[i][1] for i in range(n)], s=50, c=[colors[clusterization[i]] for i in range(n)])
+        axes[i].set_title(texts[i] + f" k = {utils.GetDistinctRealClassesAmount(clusterization)}")
+        
+        if(i != 0):
+            frame_text = axes[i].text(0.02, 0.98, '', transform=axes[i].transAxes,
+                                ha='left', va='top', fontsize=10,
+                                bbox=dict(facecolor='white', edgecolor='black', boxstyle='round'))
+            
+            frame_text.set_text(f"Score: {round(utils.CalculateClusterizationScore(realClust, clusterization),4)}")
+        
+    plt.show()
+    
+def PlotBlackPoints(points):
+    plt.figure(figsize=(12,12))
+    
+    plt.scatter([points[i][0] for i in range(len(points))], [points[i][1] for i in range(len(points))], s=50, c='black')
+    
+    plt.title("Point distribution without cluster assignment")
+    
+    plt.show()

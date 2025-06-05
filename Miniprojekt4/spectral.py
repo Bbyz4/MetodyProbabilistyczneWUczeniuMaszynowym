@@ -41,32 +41,31 @@ def ConstructAdjacencyMatrix(points, matrixConstructMethod, parameter):
                 closestPointsIndeces = np.argsort([utils.EuclideanDistSquared(points[i], points[j]) for j in range(n)])
                 for j in range(1, parameter+1): #we skip i itself which is the closest
                     A[i][closestPointsIndeces[j]] = 1
+                    A[closestPointsIndeces[j]][i] = 1
                     
         case _:
             raise ValueError("ConstructAdjacencyMatrix: invalid construct method!")
     
     return A
 
-def SpectralTransformation(points, desiredDimension, normalizedLaplacian):
+def SpectralTransformation(points, desiredDimension, normalizedLaplacian, matrixMethod, parameter):
     
     n = len(points)
     
-    A = ConstructAdjacencyMatrix(points, MatrixConstructMethod.FULL_RBF, 0.1)
+    A = ConstructAdjacencyMatrix(points, matrixMethod, parameter)
     D = np.zeros((n,n))
     
     for i in range(n):
         D[i][i] = sum(A[i][j] for j in range(n))
         
     D_inv_sqrt = np.diag(1.0 / np.sqrt(np.diag(D)))
-     
-     
        
     if normalizedLaplacian: 
         L = D_inv_sqrt @ (D-A) @ D_inv_sqrt
     else:
         L = D-A
     
-    eigenvals, eigenvecs = np.linalg.eigh(L)
+    _, eigenvecs = np.linalg.eigh(L)
     # first eigenval is always 0 with a constant eigenvec    
 
     eigenvecsForTransformation = eigenvecs[:, 1 : desiredDimension + 1]
