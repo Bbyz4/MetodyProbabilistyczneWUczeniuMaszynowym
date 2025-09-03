@@ -8,7 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import math
 
-NUMBER_OF_TOTAL_TRIES = 1
+NUMBER_OF_TOTAL_TRIES = 5
 
 GRADIENT_DESCENT_RATE = 0.1
 GRADIENT_DESCENT_ITERATIONS = 1000
@@ -20,8 +20,8 @@ trainingSetSetParts = {
 }
 
 checkedParameters = [
-    (0.1,1000,2,3),
-    (0.1,1000,2,0)
+    (0.1,1000,3,10),
+    (0.1,1000,3,0)
 ]
 
 avgTheta = {
